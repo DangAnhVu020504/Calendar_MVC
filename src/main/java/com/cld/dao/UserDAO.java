@@ -44,11 +44,7 @@ public class UserDAO {
     
     public User findByUsername(String username) {
         String sql = "SELECT * FROM users WHERE username = ?";
-        try {
-            return jdbcTemplate.queryForObject(sql, new UserRowMapper(), username);
-        } catch (Exception e) {
-            return null;
-        }
+        return jdbcTemplate.queryForObject(sql, new UserRowMapper(), username);
     }
     
     public User findByUsernameAndPassword(String username, String password) {
@@ -66,28 +62,39 @@ public class UserDAO {
         return count != null && count > 0;
     }
     
-    public List<User> findAllUsers() {
+    public List<User> findAll() {
         String sql = "SELECT * FROM users ORDER BY created_at DESC";
         return jdbcTemplate.query(sql, new UserRowMapper());
     }
     
     public User findById(Long id) {
         String sql = "SELECT * FROM users WHERE id = ?";
-        try {
-            return jdbcTemplate.queryForObject(sql, new UserRowMapper(), id);
-        } catch (Exception e) {
-            return null;
-        }
+        return jdbcTemplate.queryForObject(sql, new UserRowMapper(), id);
     }
     
-    public void updateUser(User user) {
+    public void update(User user) {
         String sql = "UPDATE users SET username = ?, password = ?, email = ?, full_name = ? WHERE id = ?";
         jdbcTemplate.update(sql, user.getUsername(), user.getPassword(), 
                            user.getEmail(), user.getFullName(), user.getId());
     }
     
-    public void deleteUser(Long id) {
+    public void delete(Long id) {
         String sql = "DELETE FROM users WHERE id = ?";
         jdbcTemplate.update(sql, id);
+    }
+
+    public List<User> findRecentUsers(int limit) {
+        String sql = "SELECT * FROM users ORDER BY created_at DESC LIMIT ?";
+        return jdbcTemplate.query(sql, new UserRowMapper(), limit);
+    }
+
+    public long count() {
+        String sql = "SELECT COUNT(*) FROM users";
+        return jdbcTemplate.queryForObject(sql, Long.class);
+    }
+
+    public User findByEmail(String email) {
+        String sql = "SELECT * FROM users WHERE email = ?";
+        return jdbcTemplate.queryForObject(sql, new UserRowMapper(), email);
     }
 }

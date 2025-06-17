@@ -156,7 +156,7 @@
         }
         
         .sidebar {
-            width: 400px;
+            width: 300px;
             background: white;
             border-radius: 8px;
             padding: 1.5rem;
@@ -390,17 +390,35 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/dashboard">
-                <i class="fas fa-calendar-alt me-2"></i>
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/admin/dashboard">
                 Quản lý lịch trình
             </a>
-            <div class="navbar-nav ms-auto">
-                <span class="navbar-text me-3">
-                    Xin chào, <c:out value="${user.fullName}"/>!
-                </span>
-                <a class="nav-link" href="${pageContext.request.contextPath}/logout">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/users">Người dùng</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/schedules">Lịch trình</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/reports">Báo cáo</a>
+                    </li>
+                </ul>
+                <div class="navbar-nav ms-auto">
+                    <span class="navbar-text me-3">
+                        Xin chào, <c:out value="${user.fullName}"/>!
+                    </span>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/logout">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
@@ -418,6 +436,7 @@
             </div>
         </div>
     </div>
+    <p>Number of schedules: ${schedules.size()}</p>
 
     <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -451,6 +470,9 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
    <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var contextPath = '${pageContext.request.contextPath}';
+            var csrfParameterName = '${_csrf.parameterName}';
+            var csrfToken = '${_csrf.token}';
             var calendarEl = document.getElementById('calendar');
             var todoPanel = document.getElementById('todoPanel');
             var isTodoPanelOpen = false; // Track panel state
@@ -494,7 +516,7 @@
 
                             openTodoPanel();
                             document.getElementById('selectedDate').textContent = new Date(selectedDateStr).toLocaleDateString('vi-VN');
-                            document.getElementById('addEventLink').href = '${pageContext.request.contextPath}/schedule/new?date=' + selectedDateStr;
+                            document.getElementById('addEventLink').href = contextPath + '/schedule/new?date=' + selectedDateStr;
                             updateTodoList(selectedDateStr, calendar);
                         }
                     }
@@ -580,8 +602,8 @@
                     document.getElementById('eventStart').textContent = startDate;
                     document.getElementById('eventEnd').textContent = endDate;
                     document.getElementById('eventType').textContent = event.extendedProps.type || 'Không xác định';
-                    document.getElementById('editEvent').href = '${pageContext.request.contextPath}/schedule/edit/' + event.id;
-                    document.getElementById('deleteEventForm').action = '${pageContext.request.contextPath}/schedule/delete/' + event.id;
+                    document.getElementById('editEvent').href = contextPath + '/schedule/edit/' + event.id;
+                    document.getElementById('deleteEventForm').action = contextPath + '/schedule/delete/' + event.id;
 
                     var modal = new bootstrap.Modal(document.getElementById('eventModal'));
                     modal.show();
@@ -594,7 +616,7 @@
 
                     openTodoPanel();
                     document.getElementById('selectedDate').textContent = new Date(selectedDateStr).toLocaleDateString('vi-VN');
-                    document.getElementById('addEventLink').href = '${pageContext.request.contextPath}/schedule/new?date=' + selectedDateStr;
+                    document.getElementById('addEventLink').href = contextPath + '/schedule/new?date=' + selectedDateStr;
                     updateTodoList(selectedDateStr, calendar);
                 }
             });
@@ -655,7 +677,7 @@
                     item.style.animation = null;
                 });
                 document.getElementById('selectedDate').textContent = new Date(selectedDateStr).toLocaleDateString('vi-VN');
-                document.getElementById('addEventLink').href = '${pageContext.request.contextPath}/schedule/new?date=' + selectedDateStr;
+                document.getElementById('addEventLink').href = contextPath + '/schedule/new?date=' + selectedDateStr;
             }
 
             window.closeTodoPanel = function() {
@@ -684,22 +706,63 @@
                     var itemDiv = document.createElement('div');
                     var priorityClass = event.classNames[0] ? event.classNames[0] : '';
                     itemDiv.className = 'sidebar-item ' + priorityClass;
-                    itemDiv.innerHTML = `
-                        <div class="event-details">
-                            <span>\${event.title || 'Không có tiêu đề'}</span>
-                            <div class="event-actions">
-                                <a href="${pageContext.request.contextPath}/schedule/edit/\${event.id}" class="btn btn-edit btn-sm"><i class="fas fa-edit"></i></a>
-                                <form action="${pageContext.request.contextPath}/schedule/delete/\${event.id}" method="post" style="display:inline;">
-                                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-                                    <button type="submit" class="btn btn-delete btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa lịch trình này?')"><i class="fas fa-trash"></i></button>
-                                </form>
-                            </div>
-                        </div>
-                        <small>
-                            <strong>Thời gian:</strong> \${event.start ? new Date(event.start).toLocaleString('vi-VN') : 'Không có'}<br>
-                            \${event.end ? '<strong>Kết thúc:</strong> ' + new Date(event.end).toLocaleString('vi-VN') : ''}
-                        </small>
-                    `;
+
+                    var eventDetailsDiv = document.createElement('div');
+                    eventDetailsDiv.className = 'event-details';
+
+                    var titleSpan = document.createElement('span');
+                    titleSpan.textContent = event.title || 'Không có tiêu đề';
+                    eventDetailsDiv.appendChild(titleSpan);
+
+                    var eventActionsDiv = document.createElement('div');
+                    eventActionsDiv.className = 'event-actions';
+
+                    var editLink = document.createElement('a');
+                    editLink.href = contextPath + '/schedule/edit/' + event.id;
+                    editLink.className = 'btn btn-edit btn-sm';
+                    var editIcon = document.createElement('i');
+                    editIcon.className = 'fas fa-edit';
+                    editLink.appendChild(editIcon);
+                    eventActionsDiv.appendChild(editLink);
+
+                    var deleteForm = document.createElement('form');
+                    deleteForm.action = contextPath + '/schedule/delete/' + event.id;
+                    deleteForm.method = 'post';
+                    deleteForm.style.display = 'inline';
+
+                    var csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = csrfParameterName;
+                    csrfInput.value = csrfToken;
+                    deleteForm.appendChild(csrfInput);
+
+                    var deleteButton = document.createElement('button');
+                    deleteButton.type = 'submit';
+                    deleteButton.className = 'btn btn-delete btn-sm';
+                    deleteButton.onclick = function() { return confirm('Bạn có chắc chắn muốn xóa lịch trình này?'); };
+                    var deleteIcon = document.createElement('i');
+                    deleteIcon.className = 'fas fa-trash';
+                    deleteButton.appendChild(deleteIcon);
+                    deleteForm.appendChild(deleteButton);
+                    eventActionsDiv.appendChild(deleteForm);
+
+                    eventDetailsDiv.appendChild(eventActionsDiv);
+                    itemDiv.appendChild(eventDetailsDiv);
+
+                    var smallTag = document.createElement('small');
+                    var startTimeSpan = document.createElement('strong');
+                    startTimeSpan.textContent = 'Thời gian:';
+                    smallTag.appendChild(startTimeSpan);
+                    smallTag.innerHTML += ' ' + (event.start ? new Date(event.start).toLocaleString('vi-VN') : 'Không có') + '<br>';
+
+                    if (event.end) {
+                        var endTimeSpan = document.createElement('strong');
+                        endTimeSpan.textContent = 'Kết thúc:';
+                        smallTag.appendChild(endTimeSpan);
+                        smallTag.innerHTML += ' ' + new Date(event.end).toLocaleString('vi-VN');
+                    }
+                    itemDiv.appendChild(smallTag);
+
                     todoList.appendChild(itemDiv);
                 });
             }

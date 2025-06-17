@@ -18,13 +18,21 @@ public class AuthController {
     private UserService userService;
     
     @GetMapping("/")
-    public String home() {
+    public String home(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
         return "redirect:/login";
+        }
+        return user.getId() == 1 ? "redirect:/admin/dashboard" : "redirect:/dashboard";
     }
     
     @GetMapping("/login")
-    public String loginPage() {
-        return "login";
+    public String loginPage(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user != null) {
+            return user.getId() == 1 ? "redirect:/admin/dashboard" : "redirect:/dashboard";
+        }
+        return "user/login";
     }
     
     @PostMapping("/login")
@@ -35,20 +43,20 @@ public class AuthController {
         User user = userService.login(username, password);
         if (user != null) {
             session.setAttribute("user", user);
-            if (user.getId() == 1) { // Chuyển hướng đến admin dashboard nếu là admin
-                return "redirect:/admin/dashboard";
-            } else {
-                return "redirect:/dashboard"; // Chuyển hướng đến dashboard người dùng thường
-            }
+            return user.getId() == 1 ? "redirect:/admin/dashboard" : "redirect:/dashboard";
         } else {
             model.addAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");
-            return "login";
+            return "user/login";
         }
     }
     
     @GetMapping("/register")
-    public String registerPage() {
-        return "register";
+    public String registerPage(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user != null) {
+            return user.getId() == 1 ? "redirect:/admin/dashboard" : "redirect:/dashboard";
+        }
+        return "user/register";
     }
     
     @PostMapping("/register")
@@ -57,13 +65,26 @@ public class AuthController {
                           @RequestParam("email") String email,
                           @RequestParam("fullName") String fullName,
                           Model model) {
-        User user = new User(username, password, email, fullName);
+        if (username == null || username.trim().isEmpty() ||
+            password == null || password.trim().isEmpty() ||
+            email == null || email.trim().isEmpty() ||
+            fullName == null || fullName.trim().isEmpty()) {
+            model.addAttribute("error", "Vui lòng điền đầy đủ thông tin!");
+            return "user/register";
+        }
+        
+        User user = new User();
+        user.setUsername(username.trim());
+        user.setPassword(password.trim());
+        user.setEmail(email.trim());
+        user.setFullName(fullName.trim());
+        
         if (userService.register(user)) {
             model.addAttribute("success", "Đăng ký thành công! Vui lòng đăng nhập.");
-            return "login";
+            return "user/login";
         } else {
             model.addAttribute("error", "Tên đăng nhập đã tồn tại!");
-            return "register";
+            return "user/register";
         }
     }
     

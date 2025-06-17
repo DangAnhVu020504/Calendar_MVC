@@ -36,7 +36,7 @@ public class ScheduleController {
         List<Schedule> schedules = scheduleService.getUserSchedules(user.getId());
         model.addAttribute("schedules", schedules);
         model.addAttribute("user", user);
-        return "dashboard";
+        return "user/dashboard";
     }
     
     @GetMapping("/schedule/new")
@@ -48,7 +48,7 @@ public class ScheduleController {
         
         model.addAttribute("priorities", Priority.values());
         model.addAttribute("scheduleTypes", ScheduleType.values());
-        return "new-schedule";
+        return "user/new-schedule";
     }
     
     @PostMapping("/schedule/create")
@@ -56,9 +56,10 @@ public class ScheduleController {
                                @RequestParam("description") String description,
                                @RequestParam("startDate") String startDate,
                                @RequestParam(value = "endDate", required = false) String endDate,
-                               @RequestParam(value = "recurringDays", required = false) Integer recurringDays,
                                @RequestParam("type") String type,
                                @RequestParam("priority") String priority,
+                               @RequestParam(value = "isRecurring", required = false) boolean isRecurring,
+                               @RequestParam(value = "recurringPattern", required = false) String recurringPattern,
                                HttpSession session,
                                Model model) {
         User user = (User) session.getAttribute("user");
@@ -69,50 +70,32 @@ public class ScheduleController {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
             LocalDateTime start = LocalDateTime.parse(startDate, formatter);
+            LocalDateTime end = endDate != null && !endDate.isEmpty() ? 
+                LocalDateTime.parse(endDate, formatter) : null;
             
-            Schedule schedule = new Schedule(
-                user.getId(),
-                title,
-                description,
-                start,
-                null, // endDate sẽ được xử lý tùy theo type
-                ScheduleType.valueOf(type),
-                Priority.valueOf(priority)
-            );
+            Schedule schedule = new Schedule();
+            schedule.setUserId(user.getId());
+            schedule.setTitle(title);
+            schedule.setDescription(description);
+            schedule.setStartDate(start);
+            schedule.setEndDate(end);
+            schedule.setType(ScheduleType.valueOf(type));
+            schedule.setPriority(Priority.valueOf(priority));
+            schedule.setRecurring(isRecurring);
+            schedule.setRecurringPattern(recurringPattern);
             
-            if ("RECURRING".equals(type)) {
-                // Xử lý lặp lại: tạo sự kiện cho từng ngày từ startDate trong recurringDays ngày
-                int days = recurringDays != null && recurringDays > 0 ? recurringDays : 1;
-                schedule.setRecurringDays(days);
-                LocalDateTime currentStart = start;
-                
-                for (int i = 0; i < days; i++) {
-                    Schedule recurringSchedule = new Schedule(
-                        user.getId(),
-                        title,
-                        description,
-                        currentStart,
-                        null, // Không cần endDate cho RECURRING
-                        ScheduleType.valueOf(type),
-                        Priority.valueOf(priority)
-                    );
-                    scheduleService.createSchedule(recurringSchedule);
-                    currentStart = currentStart.plusDays(1); // Tăng ngày, giữ nguyên giờ
-                }
+            scheduleService.createSchedule(schedule);
+            // Check if the user is an admin (ID = 1) and redirect accordingly
+            if (user.getId() == 1L) {
+                return "redirect:/admin/dashboard";
             } else {
-                // Xử lý LONG_TERM và SHORT_TERM
-                LocalDateTime end = endDate != null && !endDate.isEmpty() ? 
-                    LocalDateTime.parse(endDate, formatter) : null;
-                schedule.setEndDate(end);
-                scheduleService.createSchedule(schedule);
+                return "redirect:/dashboard";
             }
-            
-            return "redirect:/dashboard";
         } catch (Exception e) {
             model.addAttribute("error", "Có lỗi xảy ra khi tạo lịch trình: " + e.getMessage());
             model.addAttribute("priorities", Priority.values());
             model.addAttribute("scheduleTypes", ScheduleType.values());
-            return "new-schedule";
+            return "user/new-schedule";
         }
     }
     
@@ -133,7 +116,7 @@ public class ScheduleController {
         model.addAttribute("schedule", schedule);
         model.addAttribute("priorities", Priority.values());
         model.addAttribute("scheduleTypes", ScheduleType.values());
-        return "edit-schedule";
+        return "user/edit-schedule";
     }
     
     @PostMapping("/schedule/update/{id}")
@@ -142,9 +125,10 @@ public class ScheduleController {
                                @RequestParam("description") String description,
                                @RequestParam("startDate") String startDate,
                                @RequestParam(value = "endDate", required = false) String endDate,
-                               @RequestParam(value = "recurringDays", required = false) Integer recurringDays,
                                @RequestParam("type") String type,
                                @RequestParam("priority") String priority,
+                               @RequestParam(value = "isRecurring", required = false) boolean isRecurring,
+                               @RequestParam(value = "recurringPattern", required = false) String recurringPattern,
                                HttpSession session,
                                Model model) {
         User user = (User) session.getAttribute("user");
@@ -166,19 +150,22 @@ public class ScheduleController {
                 LocalDateTime.parse(endDate, formatter) : null);
             schedule.setType(ScheduleType.valueOf(type));
             schedule.setPriority(Priority.valueOf(priority));
-            
-            if ("RECURRING".equals(type)) {
-                schedule.setRecurringDays(recurringDays != null && recurringDays > 0 ? recurringDays : 1);
-            }
+            schedule.setRecurring(isRecurring);
+            schedule.setRecurringPattern(recurringPattern);
             
             scheduleService.updateSchedule(schedule);
-            return "redirect:/dashboard";
+            // Check if the user is an admin (ID = 1) and redirect accordingly
+            if (user.getId() == 1L) {
+                return "redirect:/admin/dashboard";
+            } else {
+                return "redirect:/dashboard";
+            }
         } catch (Exception e) {
             model.addAttribute("error", "Có lỗi xảy ra khi cập nhật lịch trình: " + e.getMessage());
             model.addAttribute("schedule", schedule);
             model.addAttribute("priorities", Priority.values());
             model.addAttribute("scheduleTypes", ScheduleType.values());
-            return "edit-schedule";
+            return "user/edit-schedule";
         }
     }
     
@@ -195,6 +182,11 @@ public class ScheduleController {
             scheduleService.deleteSchedule(id);
         }
         
-        return "redirect:/dashboard";
+        // Check if the user is an admin (ID = 1) and redirect accordingly
+        if (user.getId() == 1L) {
+            return "redirect:/admin/dashboard";
+        } else {
+            return "redirect:/dashboard";
+        }
     }
 }
