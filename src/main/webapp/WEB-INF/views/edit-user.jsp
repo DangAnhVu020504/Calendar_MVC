@@ -33,12 +33,12 @@
 <body style="background-color: #f8f9fa;">
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/admin-dashboard">
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/admin/dashboard">
                 <i class="fas fa-user-shield me-2"></i>
                 Admin Dashboard
             </a>
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="${pageContext.request.contextPath}/admin-dashboard">
+                <a class="nav-link" href="${pageContext.request.contextPath}/admin/dashboard">
                     <i class="fas fa-arrow-left"></i> Quay lại
                 </a>
             </div>
@@ -60,7 +60,7 @@
                         </div>
                     </c:if>
                     
-                    <form action="${pageContext.request.contextPath}/admin/update-user/${user.id}" method="post">
+                    <form action="${pageContext.request.contextPath}/admin/edit-user/${user.id}" method="post">
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                         <div class="row">
                             <div class="col-md-6">
@@ -88,7 +88,7 @@
                         </div>
                         
                         <div class="d-flex justify-content-between">
-                            <a href="${pageContext.request.contextPath}/admin-dashboard" class="btn btn-secondary">
+                            <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-secondary">
                                 <i class="fas fa-times me-2"></i>Hủy
                             </a>
                             <button type="submit" class="btn btn-primary btn-submit">

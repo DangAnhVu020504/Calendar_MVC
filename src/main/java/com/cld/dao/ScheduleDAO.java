@@ -53,31 +53,55 @@ public class ScheduleDAO {
     }
     
     public Schedule findById(Long id) {
-        String sql = "SELECT * FROM schedules WHERE id = ?";
-        try {
-            return jdbcTemplate.queryForObject(sql, new ScheduleRowMapper(), id);
-        } catch (Exception e) {
-            return null;
-        }
+        String sql = "SELECT s.*, u.username, u.full_name FROM schedules s " +
+                    "JOIN users u ON s.user_id = u.id WHERE s.id = ?";
+        return jdbcTemplate.queryForObject(sql, new ScheduleRowMapper(), id);
+    }
+    
+    public List<Schedule> findAll() {
+        String sql = "SELECT s.*, u.username, u.full_name FROM schedules s " +
+                    "JOIN users u ON s.user_id = u.id ORDER BY s.created_at DESC";
+        return jdbcTemplate.query(sql, new ScheduleRowMapper());
+    }
+    
+    public List<Schedule> findRecentSchedules(int limit) {
+        String sql = "SELECT s.*, u.username, u.full_name FROM schedules s " +
+                    "JOIN users u ON s.user_id = u.id ORDER BY s.created_at DESC LIMIT ?";
+        return jdbcTemplate.query(sql, new ScheduleRowMapper(), limit);
     }
     
     public List<Schedule> findByUserId(Long userId) {
-        String sql = "SELECT * FROM schedules WHERE user_id = ?";
+        String sql = "SELECT s.*, u.username, u.full_name FROM schedules s " +
+                    "JOIN users u ON s.user_id = u.id WHERE s.user_id = ? ORDER BY s.created_at DESC";
         return jdbcTemplate.query(sql, new ScheduleRowMapper(), userId);
     }
     
     public List<Schedule> findUpcomingSchedules() {
-        String sql = "SELECT * FROM schedules WHERE start_date > NOW() ORDER BY start_date ASC";
+        String sql = "SELECT s.*, u.username, u.full_name FROM schedules s " +
+                    "JOIN users u ON s.user_id = u.id WHERE s.start_date > NOW() ORDER BY s.start_date ASC";
         return jdbcTemplate.query(sql, new ScheduleRowMapper());
     }
     
+    public long count() {
+        String sql = "SELECT COUNT(*) FROM schedules";
+        return jdbcTemplate.queryForObject(sql, Long.class);
+    }
+    
     public void update(Schedule schedule) {
-        String sql = "UPDATE schedules SET user_id = ?, title = ?, description = ?, start_date = ?, end_date = ?, type = ?, " +
-                     "priority = ?, color = ?, is_recurring = ?, recurring_pattern = ?, notification_sent = ? WHERE id = ?";
-        jdbcTemplate.update(sql, schedule.getUserId(), schedule.getTitle(), schedule.getDescription(),
-                           schedule.getStartDate(), schedule.getEndDate(), schedule.getType().name(),
-                           schedule.getPriority().name(), schedule.getColor(), schedule.isRecurring(),
-                           schedule.getRecurringPattern(), schedule.isNotificationSent(), schedule.getId());
+        String sql = "UPDATE schedules SET title = ?, description = ?, start_date = ?, end_date = ?, " +
+                    "type = ?, priority = ?, color = ?, is_recurring = ?, recurring_pattern = ? WHERE id = ?";
+        jdbcTemplate.update(sql, 
+            schedule.getTitle(),
+            schedule.getDescription(),
+            schedule.getStartDate(),
+            schedule.getEndDate(),
+            schedule.getType().toString(),
+            schedule.getPriority().toString(),
+            schedule.getColor(),
+            schedule.isRecurring(),
+            schedule.getRecurringPattern(),
+            schedule.getId()
+        );
     }
     
     public void updateNotificationSent(Long scheduleId) {

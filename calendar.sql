@@ -1,7 +1,7 @@
-CREATE DATABASE calendar;
+DROP DATABASE IF EXISTS calendar;
+CREATE DATABASE calendar CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE calendar;
 
--- Bảng users
 CREATE TABLE users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -9,9 +9,8 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- Bảng schedules
 CREATE TABLE schedules (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -27,14 +26,13 @@ CREATE TABLE schedules (
     notification_sent BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- Thêm dữ liệu mẫu
 INSERT INTO users (username, password, email, full_name) VALUES 
 ('admin', 'admin123', 'admin@example.com', 'Administrator'),
 ('user1', 'password123', 'user1@example.com', 'Nguyen Van A');
 
 INSERT INTO schedules (user_id, title, description, start_date, end_date, type, priority, color, is_recurring) VALUES
-(1, 'Hoàn thành dự án', 'Dự án phần mềm quản lý lịch trình', '2024-01-01 09:00:00', '2024-01-05 17:00:00', 'LONG_TERM', 'URGENT_IMPORTANT', '#FF0000', FALSE),
-(1, 'Sinh nhật bạn A', 'Tham dự tiệc sinh nhật', '2024-01-15 18:00:00', '2024-01-15 22:00:00', 'SHORT_TERM', 'SPECIAL', '#800080', FALSE),
-(1, 'Họp team', 'Họp weekly team', '2024-01-08 10:00:00', '2024-01-08 11:00:00', 'RECURRING', 'IMPORTANT_NOT_URGENT', '#0000FF', TRUE);
+(1, 'Hoàn thành dự án', 'Dự án phần mềm quản lý lịch trình', '2025-06-16 09:00:00', '2025-06-16 17:00:00', 'LONG_TERM', 'URGENT_IMPORTANT', '#FF0000', FALSE),
+(1, 'Sinh nhật bạn A', 'Tham dự tiệc sinh nhật', '2025-06-17 18:00:00', '2025-06-17 22:00:00', 'SHORT_TERM', 'SPECIAL', '#800080', FALSE),
+(1, 'Họp team', 'Họp weekly team', '2025-06-14 10:00:00', '2025-06-14 11:00:00', 'RECURRING', 'IMPORTANT_NOT_URGENT', '#0000FF', TRUE);

@@ -156,7 +156,7 @@
         }
         
         .sidebar {
-            width: 400px;
+            width: 300px;
             background: white;
             border-radius: 8px;
             padding: 1.5rem;

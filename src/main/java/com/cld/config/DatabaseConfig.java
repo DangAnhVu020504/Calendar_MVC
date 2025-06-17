@@ -33,7 +33,7 @@ public class DatabaseConfig {
         dataSource.setDriverClassName(props.getProperty("db.driver", "com.mysql.cj.jdbc.Driver"));
         dataSource.setUrl(props.getProperty("db.url", "jdbc:mysql://localhost:3306/calendar"));
         dataSource.setUsername(props.getProperty("db.username", "root"));
-        dataSource.setPassword(props.getProperty("db.password", "Anhvu02052004@"));
+        dataSource.setPassword(props.getProperty("db.password", "251204"));
         return dataSource;
     }
     

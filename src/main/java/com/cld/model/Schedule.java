@@ -18,6 +18,8 @@ public class Schedule {
     private String recurringPattern;
     private boolean notificationSent;
     private Integer recurringDays;
+    private LocalDateTime createdAt;
+    private User user;
 
     // Constructors
     public Schedule() {}
@@ -75,6 +77,10 @@ public class Schedule {
         return endDate != null ? Date.from(endDate.atZone(ZoneId.systemDefault()).toInstant()) : null;
     }
 
+    public Date getCreatedAtAsDate() {
+        return createdAt != null ? Date.from(createdAt.atZone(ZoneId.systemDefault()).toInstant()) : null;
+    }
+
     public ScheduleType getType() { return type; }
     public void setType(ScheduleType type) { 
         this.type = type;
@@ -101,4 +107,17 @@ public class Schedule {
 
     public Integer getRecurringDays() { return recurringDays; }
     public void setRecurringDays(Integer recurringDays) { this.recurringDays = recurringDays; }
+
+    // Getter and Setter for createdAt
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    // Getter and Setter for User
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }
